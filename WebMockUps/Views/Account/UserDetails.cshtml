@@ -1,0 +1,516 @@
+﻿@{
+    ViewData["Title"] = "Account Details";
+}
+@model DataResponse
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    a {
+        text-decoration: none;
+        color: black !important;
+    }
+
+    .main {
+        margin-top: 88px;
+    }
+
+    .sidebar {
+        background-color: #002B5B;
+        padding: 20px;
+    }
+
+    .sidebar a {
+        color: #fff !important;
+        text-decoration: none;
+        display: block;
+        margin: 20px 15%;
+        text-align: left;
+        font-size: 1.4rem !important;
+    }
+
+    .sidebar h1 {
+        margin-top: 40px;
+        margin-bottom: 45px;
+        margin-left: 7%;
+        color: #fff;
+        font-size: 1.7rem;
+    }
+
+    .sidebar a.active {
+        color: orange !important;
+    }
+
+    .sidebar a:hover {
+        background-color: #004080;
+        border-radius: 5px;
+        padding-left: 10px;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        background: linear-gradient(to right, #FF512F, #F09819);
+        color: white;
+        padding: 20px;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+        
+    .header h2, .header h5 {
+        margin: 0;
+    }
+        
+    .account-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .account-info span {
+        font-weight: bold;
+    }
+        
+    .account-info div {
+        flex: 1 1 20%;
+        font-size: 1.1rem;
+    }
+        
+    .section-header {
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        color: #666;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+
+    .section-header:nth-of-type(2) {
+        margin-top: 30px;
+    }
+        
+    .main-content {
+        padding: 20px;
+        background-color: #fff;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+        
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: .9rem;
+    }
+        
+    .detail-item span {
+        font-weight: bold;
+    }
+        
+    .details-col {
+        padding: 20px;
+    }
+
+    .row-title-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .no-arrow::after {
+        border: none !important;
+        font: normal normal normal 25px/1 FontAwesome;
+        content: "\f013" !important;
+        vertical-align: middle;
+        color: white;
+    }
+
+
+    .dropdown-item-more {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+
+    .dropdown-item-more i {
+        margin-right: 12px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dropdown-item-more span {
+        flex-grow: 1;
+    }
+
+    .custom-dropdown {
+        margin-left: auto;
+    }
+
+    #password-requirements {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #password-requirements li {
+        color: red;
+    }
+
+    #password-requirements li.valid {
+        color: green;
+    }
+
+    button[type="submit"]:valid {
+        background-image: none !important; 
+    }
+
+    @@media (max-width: 992px) {
+        .sidebar {
+            display: none;
+        }
+
+        .account-info div {
+            flex: 1 1 45%;
+            font-size: 1rem;
+        }
+
+        .section-header {
+            margin-top: 0;
+        }
+
+        .col2 {
+            width: 100%;
+            margin-top: 30px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .account-item {
+            flex: 1 1 33.333333%;
+        }
+
+        .account-status {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="container-fluid main">
+    <div class="row">
+        <div class="sidebar col-md-3 p-3">
+            <h1>Account Info</h1>
+            <a asp-action="Index"><i class="fas fa-user"></i> Akun MT5</a>
+            <a href="#"><i class="fas fa-money-check-alt"></i> Deposit</a>
+            <a href="#"><i class="fas fa-hand-holding-usd"></i> Withdrawal</a>
+            <a class="active" asp-action="UserDetails"><i class="fas fa-user-cog"></i> Profile</a>
+        </div>
+
+        <div class="col2 col-md-9 p-5">
+            <div class="header p-5">
+                <div class="row-title-btn">
+                    <h2>@Model.User.Username</h2>  
+                    <div class="dropdown custom-dropdown">
+                        <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                            <li>
+                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                                    <i class="fas fa-list"></i>
+                                    <span class="text">Transaction History</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                    <i class="fas fa-edit white icon"></i>
+                                    <span class="text">Update Details</span>
+                                </a>
+                            </li>
+                            <li>    
+                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                                    <i class="fa-solid fa-lock icon"></i>
+                                    <span class="text">Change Password</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <h5>@Model.User.Fullname</h5>
+                <div class="account-info mt-5">
+                    <div>Balance<br><span>IDR @Model.User.Balance.ToString("#,##0.00")</span></div>
+                    <div>Equity<br><span>IDR @Model.User.Equity.ToString("#,##0.00")</span></div>
+                    <div>Free Margin<br><span>IDR @Model.User.FreeMargin.ToString("#,##0.00")</span></div>
+                    <div>Account Type<br><span>@Model.User.AccountType - @Model.User.LiveAccountType</span></div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="row">
+                    <div class="col-md-6 details-col">
+                        <div class="section-header">Account Details</div>
+                        <div class="detail-item">
+                            Status<span style="color: @(Model.User.Status == "RESTRICTED" ? "orange" : "green");">
+                                @Model.User.Status
+                            </span>
+                        </div>
+                        <div class="detail-item">Account Type<span>@Model.User.AccountType</span></div>
+                        <div class="detail-item">Live Account Type<span>@Model.User.LiveAccountType</span></div>
+                        <div class="detail-item mb-5">Platform<span>@Model.User.Platform</span></div>
+
+                        <div class="section-header">Financial Details</div>
+                        <div class="detail-item">Profit<span>IDR @Model.User.Profit.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Storage<span>@Model.User.Storage.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Commission<span>@Model.User.Commission.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Floating<span>IDR @Model.User.Floating.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Margin<span>@Model.User.Margin.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Free Margin<span>IDR @Model.User.FreeMargin.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Margin Level<span>@Model.User.MarginLevel.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Margin Leverage<span>@Model.User.MarginLeverage</span></div>
+                        <div class="detail-item">Margin Initial<span>@Model.User.MarginInitial.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Margin Maintenance<span>@Model.User.MarginMaintenance.ToString("#,##0.00")</span></div>
+                    </div>
+
+                    <div class="col-md-6 details-col">
+                        <div class="section-header">SO</div>
+                        <div class="detail-item">SO Time<span>@Model.User.SoTime.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">SO Level<span>@Model.User.SoLevel.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">SO Equity<span>@Model.User.SoEquity.ToString("#,##0.00")</span></div>
+                        <div class="detail-item mb-5">SO Margin<span>@Model.User.SoMargin.ToString("#,##0.00")</span></div>
+
+                        <div class="section-header">Other Details</div>
+                        <div class="detail-item">Assets<span>@Model.User.Assets.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Liabilities<span>@Model.User.Liabilities.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Blocked Commission<span>@Model.User.BlockedCommission.ToString("#,##0.00")</span></div>
+                        <div class="detail-item">Blocked Profit<span>@Model.User.BlockedProfit.ToString("#,##0.00")</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (Model.UserTransactionList == null || !Model.UserTransactionList.Any())
+                    {
+                        <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300" />
+                        <p class="text-center">No data found...</p>
+                    }
+                    else
+                    {
+                        <table class="table table-hover table-bordered table-custom">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" scope="col">ID</th>
+                                    <th class="text-center" scope="col">Transaction Time</th>
+                                    <th class="text-center" scope="col">Type</th>
+                                    <th class="text-center" scope="col">Amount (IDR)</th>
+                                    <th class="text-center" class="account-number-column" scope="col">Account No.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in Model.UserTransactionList)
+                                {
+                                    <tr>
+                                        <td class="text-center">@transaction.TransactionId</td>
+                                        <td style="font-family: Courier New, monospace;">@transaction.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                        <td class="@(transaction.TransactionType == "withdraw" ? "text-success" : "text-danger")">@transaction.TransactionType.ToUpper()</td>
+                                        <td style="text-align: right;" class="@(transaction.TransactionType == "withdraw" ? "text-success" : "text-danger")">
+                                            @(transaction.TransactionType == "withdraw" ? "+" : "-")@transaction.Amount.ToString("#,0.00")
+                                        </td>
+                                        <td style="text-align: center;" class="account-number-column">@transaction.AccountNumber</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=@(Model.CurrentPage - 1)&reload=true" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                }
+
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                                        <a class="page-link" href="?page=@i&reload=true">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=@(Model.CurrentPage + 1)&reload=true" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="passwordModal" tabindex="-1">
+        <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+            <div class="modal-content w-75">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="post" class="was-validated" asp-action="UpdatePassword" asp-controller="Home">       
+                        <div class="mb-3">                         
+                            <label for="oldPassword" class="form-label required">Enter old password:</label>
+                            <input type="password" class="form-control" id="oldPassword" name="oldPassword" required>
+                        </div>
+                        <div class="mb-3">                         
+                            <label for="newPassword" class="form-label required">Enter new password:</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[&#64;$!%*?&])[A-Za-z\d&#64;$!%*?&]{8,}$" oninput="validatePasswordRequirements()" required>
+                            <ul id="password-requirements">
+                                <li id="min-char" class="invalid">✔️ At least 8 characters</li>
+                                <li id="uppercase" class="invalid">✔️ At least one uppercase letter</li>
+                                <li id="lowercase" class="invalid">✔️ At least one lowercase letter</li>
+                                <li id="number" class="invalid">✔️ At least one number</li>
+                                <li id="special-char" class="invalid">✔️ At least one special character (e.g., !@@#$%)</li>
+                             </ul>
+                        </div>
+                        <div class="mb-3">                         
+                            <label for="confirmPassword" class="form-label required">Confirm new password:</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <div class="valid-feedback">Valid.</div>
+                            <div class="invalid-feedback">Password do not match.</div>
+                        </div>
+                        <input type="hidden" value="@Model.User.Email" name="email" />
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["ErrorMessage"]
+                            </div>
+                        }
+                        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="updateModal" tabindex="-1">
+        <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+            <div class="modal-content w-75">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="post" class="was-validated" asp-action="UpdateName" asp-controller="Home">
+                        <div class="mb-3">
+                            <label for="username" class="form-label required">Enter new username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="@Model.User.Username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label required">Enter new name:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="@Model.User.Fullname" required>
+                        </div>
+                        <input type="hidden" value="@Model.User.Email" name="email" />
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["ErrorMessage"]
+                            </div>
+                        }
+                        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var showPasswordModal = @Html.Raw(Json.Serialize(TempData["ShowPasswordModal"]));
+        var showTransactionModal = @Html.Raw(Json.Serialize(TempData["ShowTransactionModal"]));
+        var showUpdateModal = @Html.Raw(Json.Serialize(TempData["ShowUpdateModal"]));
+
+        if (showPasswordModal) {
+            var myModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+            myModal.show();
+        }
+        else if (showTransactionModal) {
+            var myModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+            myModal.show();
+        }
+        else if (showUpdateModal) {
+            var myModal = new bootstrap.Modal(document.getElementById('updateModal'));
+            myModal.show();
+        }
+    });
+
+    function validatePasswordRequirements() {
+        const password = document.getElementById("newPassword").value;
+
+        const minChar = /.{8,}/;
+        const uppercase = /[A-Z]/;
+        const lowercase = /[a-z]/;
+        const number = /[0-9]/;
+        const specialChar = /[!@@#$%^&*(),.?":{}|<>]/;
+
+        validateRequirement("min-char", minChar.test(password));
+        validateRequirement("uppercase", uppercase.test(password));
+        validateRequirement("lowercase", lowercase.test(password));
+        validateRequirement("number", number.test(password));
+        validateRequirement("special-char", specialChar.test(password));
+    }
+
+    function validateRequirement(elementId, isValid) {
+        const element = document.getElementById(elementId);
+        if (isValid) {
+            element.classList.add("valid");
+            element.classList.remove("invalid");
+        } else {
+            element.classList.add("invalid");
+            element.classList.remove("valid");
+        }
+    }
+
+    function validatePasswordMatch() {
+        const password = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword");
+
+        if (password !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords do not match");
+        } else {
+            confirmPassword.setCustomValidity("");
+        }
+    }
+
+    window.onload = function () {
+        const password = document.getElementById("newPassword");
+        const confirmPassword = document.getElementById("confirmPassword");
+
+        password.oninput = function () {
+            validatePasswordRequirements();
+            validatePasswordMatch();
+        };
+        confirmPassword.oninput = validatePasswordMatch;
+    }
+</script>
+

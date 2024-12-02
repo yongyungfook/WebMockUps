@@ -1,0 +1,68 @@
+﻿@model List<Log>
+@{
+    ViewData["Title"] = "Home Page - Admin";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var totalBalance = TempData["totalBalance"] as decimal?;
+    var formattedTotalBalance = totalBalance.HasValue ? totalBalance.Value.ToString("N2") : "0.00";
+}
+
+<section class="dashboard">
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+    </div>
+
+    <div class="dash-content">
+        <div class="overview">
+            <div class="title">
+                <i class="uil uil-tachometer-fast-alt"></i>
+                <span class="text">Dashboard</span>
+            </div>
+            <div class="boxes">
+                <div class="box box1">
+                    <i class="uil uil-user"></i>
+                    <span class="text">Total Users</span>
+                    <span class="number">@TempData["userCount"]</span>
+                </div>
+                <div class="box box2">
+                    <i class="uil uil-user-square"></i>
+                    <span class="text">Total Accounts</span>
+                    <span class="number">@TempData["accountCount"]</span>
+                </div>
+                <div class="box box3">
+                    <i class="uil uil-pound-circle"></i>
+                    <span class="text">Total User Balance</span>
+                    <span class="number money">IDR @formattedTotalBalance</span>
+                </div>
+            </div>
+        </div>
+        <div class="activity">
+            <div class="title">
+                <i class="uil uil-clock-three"></i>
+                <span class="text">Recent Activity</span>
+                <a asp-controller="Admin" asp-action="Log" class="ms-auto" style="margin-right: 15px; text-decoration: none; font-size: 24px; cursor: pointer;"><span>View All</span></a>
+            </div>
+
+            <div class="activity-data">
+                @if(Model.Count == 0 || !Model.Any()){
+                    <h4>No data found...</h4>
+                } else {
+                    <div class="data">
+                        <span class="data-title">Activity</span>
+                        @foreach (var log in Model)
+                        {
+                            <span class="data-list">@log.Message</span>
+                        }
+
+                    </div>
+                    <div class="data">
+                        <span class="data-title">Time</span>
+                        @foreach (var log in Model)
+                        {
+                            <span class="data-list" style="font-family: monospace;">@log.LogTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

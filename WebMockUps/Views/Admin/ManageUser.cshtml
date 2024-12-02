@@ -1,0 +1,161 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home Page - Users";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+@model List<User>
+<style>
+    .data-title {
+        cursor: pointer; /* Change cursor to indicate clickability */
+        font-weight: bold;
+        position: relative; /* Allows positioning of icons */
+        padding-right: 20px; /* Space for the sort icon */
+    }
+    .data-title::after {
+        content: '\2195'; /* Unicode for a vertical arrow ↕ */
+        font-size: 0.8em;
+        position: absolute;
+        right: 5px; /* Position the arrow on the right */
+        color: gray; /* Subtle color for the arrow */
+        pointer-events: none; /* Prevent interaction with the arrow */
+    }
+
+    .data-title[data-order="asc"]::after {
+        content: '\2191'; /* Unicode for up arrow ↑ */
+    }
+
+    .data-title[data-order="desc"]::after {
+        content: '\2193'; /* Unicode for down arrow ↓ */
+    }
+</style>
+
+<section class="dashboard">
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+        <div class="search-box">
+            <i class="uil uil-search"></i>
+            <input type="text" id="searchBox" placeholder="Search by email, full name or username...">
+        </div>
+    </div>
+
+    <div class="dash-content">
+        <div class="activity">
+            <div class="title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <i class="uil uil-users-alt"></i>
+                    <span class="text">Users</span>
+                </div>
+            </div>         
+            <div class="activity-data">
+                <div class="data">
+                    <span class="data-title" style="cursor: pointer;" data-sort="email">Email</span>
+                    @foreach (var user in Model)
+                    {
+                        <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate">
+                            <a asp-controller="Admin" asp-action="ManageUserDetails" asp-route-email="@user.Email">
+                            <span>@user.Email</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+                <div class="data">
+                    <span class="data-title" style="cursor: pointer;" data-sort="username">Username</span>
+                    @foreach (var user in Model)
+                    {
+                        <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate">
+                                <span>@user.Username</span>
+                        </div>
+                    }
+                </div>
+                <div class="data">
+                    <span class="data-title" style="cursor: pointer;" data-sort="role">Full Name</span>
+                    @foreach (var user in Model)
+                    {
+                        <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate">
+                            <span>@user.Fullname</span>
+                        </div>
+                    }
+                </div>
+                <div class="data">
+                    <span class="data-title" style="cursor: pointer;" data-sort="datejoined">Date Joined</span>
+                    @foreach (var user in Model)
+                    {
+                        <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate">
+                            <span style="font-family: monospace;" class="log-time text-end">@user.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll('.data-title').forEach(header => {
+        header.addEventListener('click', function () {
+            const sortKey = this.getAttribute('data-sort'); // Get the sort key (e.g., email, username)
+            const isAscending = this.dataset.order !== 'asc'; // Toggle sort order
+            this.dataset.order = isAscending ? 'asc' : 'desc';
+
+            // Get all rows by matching data-lists in all columns
+            const rows = Array.from(document.querySelectorAll('.data-list[data-email]'));
+
+            document.querySelectorAll('.data-title').forEach(h => {
+                if (h !== this) {
+                    h.removeAttribute('data-order'); // Clear sorting state
+                }
+            });
+
+            // Sort rows
+            rows.sort((a, b) => {
+                let valueA = a.getAttribute(`data-${sortKey}`).toLowerCase() || '';
+                let valueB = b.getAttribute(`data-${sortKey}`).toLowerCase() || '';
+
+                if (sortKey === 'datejoined') {
+                    valueA = new Date(valueA);
+                    valueB = new Date(valueB);
+                }
+
+                if (isAscending) {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+
+            // Reorder rows in all columns
+            const columns = document.querySelectorAll('.data'); // All column divs
+            columns.forEach(column => {
+                const columnKey = column.querySelector('.data-title').getAttribute('data-sort');
+                rows.forEach(row => {
+                    const rowValue = row.getAttribute(`data-${columnKey}`);
+                    const matchingRow = Array.from(column.querySelectorAll('.data-list')).find(
+                        item => item.getAttribute(`data-${columnKey}`) === rowValue
+                    );
+                    if (matchingRow) column.appendChild(matchingRow);
+                });
+            });
+        });
+    });
+
+    document.getElementById('searchBox').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const activityItems = document.querySelectorAll('.data-list'); // Select all activity and time items
+
+        activityItems.forEach(item => {
+            const email = item.getAttribute('data-email')?.toLowerCase() || '';
+            const fullname = item.getAttribute('data-fullname')?.toLowerCase() || '';
+            const username = item.getAttribute('data-username')?.toLowerCase() || '';
+
+            // Check if either the message or time matches the query
+            if (username.includes(query) || fullname.includes(query) || email.includes(query)) {
+                item.style.display = ''; // Show the item if it matches
+            } else {
+                item.style.display = 'none'; // Hide the item if it doesn't match
+            }
+        });
+    });
+
+</script>
+

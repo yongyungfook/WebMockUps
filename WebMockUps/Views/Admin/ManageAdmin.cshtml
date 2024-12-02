@@ -1,0 +1,612 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home Page - Users";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+@model List<User>
+<style>
+    .data-title {
+        cursor: pointer; /* Change cursor to indicate clickability */
+        font-weight: bold;
+        position: relative; /* Allows positioning of icons */
+        padding-right: 20px; /* Space for the sort icon */
+    }
+    .data-title::after {
+        content: '\2195'; /* Unicode for a vertical arrow ↕ */
+        font-size: 0.8em;
+        position: absolute;
+        right: 5px; /* Position the arrow on the right */
+        color: gray; /* Subtle color for the arrow */
+        pointer-events: none; /* Prevent interaction with the arrow */
+    }
+
+    .data-title[data-order="asc"]::after {
+        content: '\2191'; /* Unicode for up arrow ↑ */
+    }
+
+    .data-title[data-order="desc"]::after {
+        content: '\2193'; /* Unicode for down arrow ↓ */
+    }
+
+    .no-arrow::after {
+        border: none !important;
+        font: normal normal normal 18px/1 FontAwesome;
+        content: "\f013" !important;
+        vertical-align: middle;
+        color: black;
+    }
+
+    .dropdown-item-more {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+
+    .dropdown-item-more i {
+        margin-right: 12px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dropdown-item-more span {
+        flex-grow: 1;
+    }
+
+    .custom-dropdown {
+        margin-left: auto;
+    }
+
+    .btn-add-staff {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px; /* Smaller padding for a compact button */
+        font-size: 0.875rem; /* Smaller font size */
+        font-weight: 500; /* Slightly lighter font weight */
+        background-color: #007bff; /* Bootstrap primary blue color */
+        border: none;
+        border-radius: 4px; /* Slightly smaller border radius */
+        color: white;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-add-staff i {
+        margin-right: 8px; /* Space between icon and text */
+    }
+
+    .btn-add-staff:hover {
+        background-color: #0056b3; /* Darker shade for hover effect */
+        transform: scale(1.05); /* Slightly enlarge the button on hover */
+    }
+
+    .btn-add-staff:focus {
+        outline: none; /* Remove default focus outline */
+        box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5); /* Subtle focus ring */
+    }
+
+    .btn-add-staff:active {
+        background-color: #004085; /* Even darker shade on click */
+        transform: scale(1); /* Button scale resets on click */
+    }
+
+    .modal-content-email {
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .modal-icon {
+        font-size: 60px;
+        color: #004085;
+        margin-bottom: 20px;
+        display: inline-block !important;
+    }
+
+    .modal-email {
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .btn-verify {
+        background-color: #004085;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 30px;
+    }
+
+    .btn-verify:hover {
+        background-color: #002752;
+    }
+
+    #password-requirements {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #password-requirements li {
+        color: red;
+    }
+
+    #password-requirements li.valid {
+        color: green;
+    }
+
+    /* Dark Mode Styles */
+    body.dark .activity {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .header {
+        background: var(--box1-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .account-info div {
+        background-color: var(--box2-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .section-header {
+        color: var(--title-icon-color);
+        border-bottom-color: var(--border-color);
+    }
+
+    body.dark .activity .main-content {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+        box-shadow: none;
+    }
+
+    body.dark .activity .detail-item {
+        color: var(--text-color);
+    }
+
+    body.dark .activity .detail-item span {
+        color: var(--toggle-color);
+    }
+
+    body.dark .activity .dropdown-menu {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .dropdown-menu .dropdown-item {
+        color: var(--text-color);
+    }
+
+    body.dark .activity .dropdown-menu .dropdown-item:hover {
+        background-color: var(--border-color);
+    }
+
+    /* Live Account Section */
+    body.dark .activity .live-accounts .account {
+        background-color: var(--box2-color); /* Background for each live account card */
+        color: var(--text-color); /* Text color for live account details */
+        border-radius: 8px; /* Optional: Rounded corners for each account card */
+        padding: 10px; /* Padding to give space inside the account card */
+    }
+
+    /* Demo Account Section */
+    body.dark .activity .demo-accounts .account {
+        background-color: var(--box2-color); /* Background for each demo account card */
+        color: var(--text-color); /* Text color for demo account details */
+        border-radius: 8px; /* Optional: Rounded corners for each account card */
+        padding: 10px; /* Padding to give space inside the account card */
+    }
+
+    /* Modal Background */
+    body.dark .modal-content {
+        background-color: var(--panel-color); /* Modal background */
+        color: var(--text-color); /* Modal text color */
+    }
+
+    /* Modal Header */
+    body.dark .modal-header {
+        background-color: var(--box1-color); /* Modal header background */
+        color: var(--text-color); /* Modal header text color */
+    }
+
+    /* Modal Footer */
+    body.dark .modal-footer {
+        background-color: var(--box1-color); /* Modal footer background */
+        color: var(--text-color); /* Modal footer text color */
+    }
+
+    /* Buttons */
+    body.dark .btn .btn-add {
+        background-color: var(--button-color); /* Button background */
+        color: var(--button-text-color); /* Button text color */
+    }
+
+    body.dark .btn:hover .btn-add:hover {
+        background-color: var(--button-hover-color); /* Button hover background */
+    }
+
+    /* Dropdown Menu Item Styling */
+    body.dark .dropdown-menu .dropdown-item {
+        background-color: var(--panel-color); /* Background for dropdown items */
+        color: var(--text-color); /* Text color for dropdown items */
+    }
+
+    body.dark .dropdown-menu .dropdown-item:hover {
+        background-color: var(--border-color); /* Background for hovered dropdown items */
+    }
+
+    /* Table */
+    body.dark .table-custom {
+        background-color: var(--panel-color); /* Table background color */
+        color: var(--text-color); /* Table text color */
+    }
+
+    body.dark .table-custom th,
+    body.dark .table-custom td {
+        border-color: var(--border-color); /* Table border color */
+    }
+
+    body.dark .table-custom th {
+        background-color: var(--box1-color); /* Header row background color */
+        color: var(--text-color); /* Header text color */
+    }
+
+    body.dark .table-custom tr:hover {
+        background-color: var(--box2-color); /* Row hover background */
+    }
+
+    /* Text and Links */
+    body.dark .text {
+        color: var(--text-color); /* General text color */
+    }
+
+    body.dark .text a {
+        color: var(--link-color); /* Link color */
+    }
+
+    body.dark .text a:hover {
+        color: var(--link-hover-color); /* Link hover color */
+    }
+
+    body.dark .col2 {
+        background-color: var(--panel-color) !important;
+    }
+
+    body.dark .no-arrow::after {
+        color: white;
+    }
+</style>
+
+<section class="dashboard">
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+        <div class="search-box">
+            <i class="uil uil-search"></i>
+            <input type="text" id="searchBox" placeholder="Search by email, full name or username...">
+        </div>
+    </div>
+
+    <div class="dash-content">
+        <div class="activity">
+            <div class="title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <i class="uil uil-users-alt"></i>
+                    <span class="text">Supervisors and Staffs</span>
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-add-staff" type="button" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        Add New Staff
+                    </button>
+                    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Register new staff</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form asp-action="RegisterStaff" asp-action="Admin" id="registerForm" class="was-validated">
+                                    <div class="modal-body">                                    
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label required">Nama Penuh</label>
+                                            <input type="text" name="Fullname" class="form-control" id="name" required>
+                                            <div class="valid-feedback">Valid.</div>
+                                            <div class="invalid-feedback">Please fill out this field.</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label required">Username</label>
+                                            <input type="text" name="Username" class="form-control" id="username" required>
+                                            <div class="valid-feedback">Valid.</div>
+                                            <div class="invalid-feedback">Please fill out this field.</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label required">Email</label>
+                                            <input type="email" name="Email" class="form-control" id="regEmail" required>
+                                            <div class="valid-feedback">Valid.</div>
+                                            <div class="invalid-feedback">Please fill out this field with correct format.</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label required">Password</label>
+                                            <input type="password" name="Password" class="form-control" id="regPassword" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[&#64;$!%*?&])[A-Za-z\d&#64;$!%*?&]{8,}$" required>
+                                            <ul id="password-requirements">
+                                                <li id="min-char" class="invalid">✔️ At least 8 characters</li>
+                                                <li id="uppercase" class="invalid">✔️ At least one uppercase letter</li>
+                                                <li id="lowercase" class="invalid">✔️ At least one lowercase letter</li>
+                                                <li id="number" class="invalid">✔️ At least one number</li>
+                                                <li id="special-char" class="invalid">✔️ At least one special character (e.g., !@@#$%)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmPassword" class="form-label required">Ketik Ulang Password</label>
+                                            <input type="password" class="form-control" id="confirmPassword" required>
+                                            <div class="valid-feedback">Valid.</div>
+                                            <div class="invalid-feedback">Password do not match.</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="phoneNumber" class="form-label required">No. Handphone</label>
+                                            <input type="tel" name="PhoneNumber" class="form-control" id="phoneNumber" pattern="^(\+?6?01)[02-46-9]-*[0-9]{7}$|^(\+?6?01)[1]-*[0-9]{8}$" onclick="validatePasswordRequirements()" required>
+                                            <div class="valid-feedback">Valid.</div>
+                                            <div class="invalid-feedback">Please fill out this field.</div>
+                                        </div>
+                                        @if (TempData["RegMessage"] != null)
+                                        {
+                                            <div class="alert alert-danger">
+                                                @TempData["RegMessage"]
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button class="btn btn-primary" type="submit">
+                                            Yes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (Model != null && Model.Any())
+            {
+                <div class="activity-data">
+                    <div class="data">
+                        <span class="data-title" style="cursor: pointer;" data-sort="email">Email</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <span>@user.Email</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="data">
+                        <span class="data-title" style="cursor: pointer;" data-sort="username">Username</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <span>@user.Username</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="data">
+                        <span class="data-title" style="cursor: pointer;" data-sort="role">Role</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <span>@user.Role</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="data">
+                        <span class="data-title" style="cursor: pointer;" data-sort="datejoined">Date Joined</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <span style="font-family: monospace;" class="log-time text-end">@user.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="data">
+                        <span class="data-title" style="cursor: pointer;" data-sort="status">Status</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <span @(user.Status == "BANNED" ? "style=color:red;" : "")>@user.Status</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="data">
+                        <span class="data-title">Action</span>
+                        @foreach (var user in Model)
+                        {
+                            <div class="data-list" data-fullname="@user.Fullname" data-username="@user.Username" data-email="@user.Email" data-datejoined="@user.CreatedDate" data-role="@user.Role" data-status="@user.Status">
+                                <div class="account-item btn-more text-center">
+                                    <div class="dropdown custom-dropdown">
+                                        <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        </a>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                            <li>
+                                                <a asp-controller="Admin" asp-action="ManageActivity" asp-route-email="@user.Email" class="dropdown-item dropdown-item-more d-flex">
+                                                    <i class="fa-solid fa-list icon"></i>
+                                                    <span class="text">View Activity</span>
+                                                </a>
+                                            </li>
+
+                                            @if(user.Role == "Staff") {
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#promoteModal_@user.Email.Replace(".", "_").Replace("@", "_")">
+                                                        <i class="fa-solid fa-angles-up icon"></i>
+                                                        <span class="text">Promote</span>
+                                                    </a>
+                                                </li>
+                                            } 
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#demoteModal_@user.Email.Replace(".", "_").Replace("@", "_")">
+                                                    <i class="fa-solid fa-angles-down icon"></i>
+                                                    <span class="text">Demote</span>
+                                                </a>
+                                            </li>
+      
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#banModal_@user.Email.Replace(".", "_").Replace("@", "_")">
+                                                    <i class="fas fa-ban icon"></i>
+                                                    <span class="text">@(user.Status == "BANNED" ? "Unban" : "Ban") Account</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="promoteModal_@user.Email.Replace(".", "_").Replace("@", "_")" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Confirm to promote Staff to Supervisor?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("UpdateAdminRole", "Admin")?email=@user.Email&updateAction=promote'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="demoteModal_@user.Email.Replace(".", "_").Replace("@", "_")" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @(user.Role == "Supervisor" ? "Confirm to demote Supervisor to Staff?" : "Confirm to revoke staff access?")
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("UpdateAdminRole", "Admin")?email=@user.Email&updateAction=demote'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="banModal_@user.Email.Replace(".", "_").Replace("@", "_")" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @(user.Status == "BANNED" ? $"Confirm to unban this {user.Role}?" : $"Confirm to ban this {user.Role}?")
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("BanAdmin", "Admin")?email=@user.Email&status=@user.Status'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            } else {
+                <h4>No data found...</h4>
+            }
+        </div>
+    </div>
+</section>
+
+@await Html.PartialAsync("_ValidationScriptsPartial")
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var showModal = @((TempData["ShowRegModal"] != null && (bool)TempData["ShowRegModal"]) ? "true" : "false");
+
+        if (showModal === "true") {
+            var modal = new bootstrap.Modal(document.getElementById('registerModal'));
+            modal.show();
+        }
+    });
+
+    document.querySelectorAll('.data-title').forEach(header => {
+        header.addEventListener('click', function () {
+            const sortKey = this.getAttribute('data-sort'); // Get the sort key (e.g., email, username)
+            const isAscending = this.dataset.order !== 'asc'; // Toggle sort order
+            this.dataset.order = isAscending ? 'asc' : 'desc';
+
+            // Get all rows by matching data-lists in all columns
+            const rows = Array.from(document.querySelectorAll('.data-list[data-email]'));
+
+            document.querySelectorAll('.data-title').forEach(h => {
+                if (h !== this) {
+                    h.removeAttribute('data-order'); // Clear sorting state
+                }
+            });
+
+            // Sort rows
+            rows.sort((a, b) => {
+                let valueA = a.getAttribute(`data-${sortKey}`).toLowerCase() || '';
+                let valueB = b.getAttribute(`data-${sortKey}`).toLowerCase() || '';
+
+                if (sortKey === 'datejoined') {
+                    valueA = new Date(valueA);
+                    valueB = new Date(valueB);
+                }
+
+                if (isAscending) {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+
+            // Reorder rows in all columns
+            const columns = document.querySelectorAll('.data'); // All column divs
+            columns.forEach(column => {
+                const columnKey = column.querySelector('.data-title').getAttribute('data-sort');
+                rows.forEach(row => {
+                    const rowValue = row.getAttribute(`data-${columnKey}`);
+                    const matchingRow = Array.from(column.querySelectorAll('.data-list')).find(
+                        item => item.getAttribute(`data-${columnKey}`) === rowValue
+                    );
+                    if (matchingRow) column.appendChild(matchingRow);
+                });
+            });
+        });
+    });
+
+    document.getElementById('searchBox').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const activityItems = document.querySelectorAll('.data-list'); // Select all activity and time items
+
+        activityItems.forEach(item => {
+            const email = item.getAttribute('data-email')?.toLowerCase() || '';
+            const fullname = item.getAttribute('data-fullname')?.toLowerCase() || '';
+            const username = item.getAttribute('data-username')?.toLowerCase() || '';
+            const role = item.getAttribute('data-role')?.toLowerCase() || '';
+            const status = item.getAttribute('data-status')?.toLowerCase() || '';
+
+            // Check if either the message or time matches the query
+            if (username.includes(query) || fullname.includes(query) || email.includes(query) || role.includes(query) || status.includes(query)) {
+                item.style.display = ''; // Show the item if it matches
+            } else {
+                item.style.display = 'none'; // Hide the item if it doesn't match
+            }
+        });
+    });
+</script>

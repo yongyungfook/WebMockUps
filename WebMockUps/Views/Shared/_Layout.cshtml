@@ -1,0 +1,68 @@
+﻿@using System.Security.Claims
+@{
+    var successAlert = TempData["SuccessAlert"] as string;
+    var errorAlert = TempData["ErrorAlert"] as string;
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebMockUps</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/_Layout.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body> 
+    @if (userRole == null || userRole == "User")
+    {
+        @await Html.PartialAsync("_UserHeader")
+    }
+
+    <div class="main">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    @if (!string.IsNullOrEmpty(successAlert))
+    {
+        <div class="alert alert-success alert-dismissible fade show floating-alert" role="alert" id="successAlert">
+            @successAlert
+            <button type="button" class="btn-close rounded shadow" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(errorAlert))
+    {
+        <div class="alert alert-danger alert-dismissible fade show floating-alert" role="alert" id="errorAlert">
+            @errorAlert
+            <button type="button" class="btn-close rounded shadow" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (userRole == null || userRole == "User")
+    {
+        @await Html.PartialAsync("_Footer")
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            var showModal = @((TempData["ShowLoginModal"] != null && (bool)TempData["ShowLoginModal"]) ? "true" : "false");
+
+            if (showModal) {
+                $('#modal').modal('show');
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

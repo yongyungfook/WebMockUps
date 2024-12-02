@@ -1,0 +1,45 @@
+﻿@using System.Security.Claims
+@{
+    var successAlert = TempData["SuccessMessage"] as string;
+    var errorAlert = TempData["ErrorMessage"] as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/_LayoutAdmin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+
+    <title>Admin Dashboard Panel</title>
+</head>
+<body>
+    @await Html.PartialAsync("_AdminHeader")
+
+    @RenderBody()
+
+    @if (!string.IsNullOrEmpty(successAlert))
+    {
+        <div class="alert alert-success alert-dismissible fade show floating-alert" role="alert" id="successAlert">
+            @successAlert
+            <button type="button" class="btn-close rounded shadow" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(errorAlert))
+    {
+        <div class="alert alert-danger alert-dismissible fade show floating-alert" role="alert" id="errorAlert">
+            @errorAlert
+            <button type="button" class="btn-close rounded shadow" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

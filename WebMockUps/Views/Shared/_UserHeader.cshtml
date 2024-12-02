@@ -1,0 +1,193 @@
+﻿@using System.Security.Claims
+@{
+    var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+}
+
+<img src="@Url.Content("~/assets/images/bg.png")" class="bg-img" />
+<div class="top-bar">
+    <div class="container">
+        <div class="left">
+            <a class="download-app" href="#"><i class="fa fa-download icons"></i> Download App</a>
+            <span>|</span>
+            <a href="tel:+6012345678"><i class="fa fa-phone icons"></i> (+60) 1234 5678</a>
+        </div>
+        <div class="right">
+            <div class="language-selector">
+                <img src="https://cdn-icons-png.flaticon.com/512/197/197374.png" width="20" alt="English Flag">
+            </div>
+            <span>|</span>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            </div>
+            <span>|</span>
+            @if (string.IsNullOrEmpty(userEmail))
+            {
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modal"><i class="fa fa-sign-in icons"></i> Log In</a>
+            }
+            else
+            {
+                <div class="dropdown show">
+                    <a href="#" class="dropdown-toggle" role="button" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-user"></i> @(userEmail ?? "Guest")
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Index" style="color: black !important;">Accounts and Profile</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="LogOut" style="color: black !important;">Log out</a>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light navbar-transparent navbar-padding">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+            <img src="@Url.Content("~/assets/images/logo.png")" class="logo" width="400" height="200" alt="">
+        </a>
+        <button class="navbar-toggler justify-content-center" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="justify-content-between collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav flex-grow-1 justify-content-end align-items-center text-nowrap dropdowns">
+                <li class="nav-item home">
+                    <a class="nav-link" aria-current="page" href="/..">Home</a>
+                </li>
+                @if (!string.IsNullOrEmpty(userEmail))
+                {
+                    <li class="nav-item d-none dropdown dropdown-manage">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Manage
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Index">Accounts</a></li>
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="UserDetails">View Profile</a></li>
+                            <li><a class="dropdown-item" href="/Deposit">Deposit</a></li>
+                            <li><a class="dropdown-item" href="/Withdraw">Withdraw</a></li>
+                            <li><a class="dropdown-item" asp-controller="Home" asp-action="LogOut">Sign Out</a></li>
+                        </ul>
+                    </li>
+                }
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Product
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#">Announcement</a></li>
+                        <li><a class="dropdown-item" href="#">Calendar</a></li>
+                        <li><a class="dropdown-item" href="#">Currency</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Education
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#">Announcement</a></li>
+                        <li><a class="dropdown-item" href="#">Calendar</a></li>
+                        <li><a class="dropdown-item" href="#">Currency</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        News
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#">Announcement</a></li>
+                        <li><a class="dropdown-item" href="#">Calendar</a></li>
+                        <li><a class="dropdown-item" href="#">Currency</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        About
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#">Announcement</a></li>
+                        <li><a class="dropdown-item" href="#">Calendar</a></li>
+                        <li><a class="dropdown-item" href="#">Currency</a></li>
+                    </ul>
+                </li>
+                @if (string.IsNullOrEmpty(userEmail))
+                {
+                    <li class="nav-item d-none dropdown-manage">
+                        <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#modal"><i class="fa fa-sign-in icons"></i> Log In</a>
+                    </li>
+                }
+                <li class="nav-item btn-account">
+                    <button type="button" class="btn btn-warning fw-bold btn-rounded">Open Account</button>
+                </li>
+                <li class="nav-item btm-bar justify-content-end d-none">
+                    <div class="language-selector justify-content-start">
+                        <img src="https://cdn-icons-png.flaticon.com/512/197/197374.png" width="30" alt="English Flag">
+                    </div>
+                    <div class="form-check form-switch justify-content-end">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <p class="text-center main-text">Announcement</p>
+    <p class="text-center second-main-text">Get the latest Company News here are important between you and me.</p>
+
+    <div class="container mt-auto">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-auto text-center mb-2">
+                <button type="button" class="btn btn-demo">Open Demo Account</button>
+            </div>
+            <div class="col-12 col-md-auto text-center">
+                <button type="button" class="btn btn-live">Open Live Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal" tabindex="-1">
+    <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+        <div class="modal-content w-75">
+            <div class="modal-header">
+                <h5 class="modal-title">LOGIN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" asp-controller="Home" asp-action="Login">
+                    <div data-mdb-input-init class="form-outline mb-4 form-floating">
+                        <input type="email" id="email" name="email" class="form-control" required />
+                        <label class="form-label" for="email">Email address</label>
+                    </div>
+
+                    <div data-mdb-input-init class="form-outline mb-4 form-floating">
+                        <input type="password" id="password" name="password" class="form-control" required />
+                        <label class="form-label" for="password">Password</label>
+                        <span class="password-toggle-icon"><i class="fas fa-eye-slash"></i></span>
+                    </div>
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" style="text-align: justify;">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    else if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    <div data-mdb-input-init class="mb-4">
+                        <a href="#" style="text-decoration: none;"><p class="text-danger text-center">Forgot your password?</p></a>
+                    </div>
+                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Login</button>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <div class="text-center">
+                    <p>Not a member? <a asp-controller="Home" asp-action="Register" style="color: orange !important; text-decoration: none;">Register now</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

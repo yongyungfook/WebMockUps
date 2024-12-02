@@ -1,0 +1,671 @@
+﻿@{
+    ViewData["Title"] = "Account";
+    var errorMessage = TempData["ErrorMessage"] as string;
+    var successMessage = TempData["SuccessMessage"] as string;
+    var status= User.Claims.FirstOrDefault(c => c.Type == "Status")?.Value;
+}
+@model DataResponse
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    a {
+        text-decoration: none;
+        color: black !important;
+    }
+
+    .main {
+        margin-top: 88px;
+    }
+
+    .sidebar {
+        background-color: #002B5B;
+        padding: 20px;
+    }
+
+    .sidebar a {
+        color: #fff !important;
+        text-decoration: none;
+        display: block;
+        margin: 20px 15%;
+        text-align: left;
+        font-size: 1.4rem !important;
+    }
+
+    .sidebar h1 {
+        margin-top: 40px;
+        margin-bottom: 45px;
+        margin-left: 7%;
+        color: #fff;
+        font-size: 1.7rem;
+    }
+
+    .sidebar a.active {
+        color: orange !important;
+    }
+
+    .sidebar a:hover {
+        background-color: #004080;
+        border-radius: 5px;
+        padding-left: 10px;
+    }
+
+    .row-title-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .btn-add {
+        background-color: #002d63;
+        color: white;
+        border-radius: 50px;
+        padding: 5px 10px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: auto;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .btn-add i {
+        margin-right: 8px;
+    }
+
+    .btn-add:hover {
+        color: orange;
+    }
+
+    .account {
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 1rem;
+        color: white;
+        background-color: #ffc107;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .account-item {
+        flex: 1 1 calc(14.2857142857% - 15px); 
+        min-width: 150px; 
+        padding: 10px;
+        color: white;
+        border-radius: 5px;
+    }
+
+    .account-status {
+        flex: 1 1 100%;
+        text-align: right;
+        background-color: transparent;
+    }
+
+    .dropdown-icon {
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    .no-arrow::after {
+        border: none !important;
+        font: normal normal normal 25px/1 FontAwesome;
+        content: "\f142" !important;
+        vertical-align: middle;
+    }
+
+
+    .dropdown-item-more {
+        display: flex;
+        align-items: center; 
+        padding: 8px 16px; 
+        cursor: pointer;
+    }
+
+    .dropdown-item-more i {
+        margin-right: 12px; 
+        width: 24px; 
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center; 
+    }
+
+    .dropdown-item-more span {
+        flex-grow: 1; 
+    }
+
+    .floating-alert {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1050;
+        transition: opacity 0.5s ease-in-out; 
+        width: auto;
+        max-width: 90%;
+    }
+
+    .table-custom td, .table-custom th {
+        padding: 12px; 
+        font-size: 0.95rem; 
+    }
+
+    a.restricted {
+        pointer-events: none; /* Prevent clicking */
+        cursor: not-allowed; /* Show a "not-allowed" cursor */
+        opacity: 0.5; /* Gray out for a disabled look */
+    }
+
+
+    @@media (max-width: 992px) {
+        .sidebar {
+            display: none;
+        }
+
+        .account-item {
+            flex: 1 1 calc(33.3333333% - 15px); 
+        }
+
+        .col2 {
+            width: 100%;
+            margin-top: 30px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .account-item {
+            flex: 1 1 33.333333%;
+        }
+        .account-status {
+            text-align: left; 
+        }
+
+        
+    }
+</style>
+
+<div class="container-fluid main">
+    <div class="row">
+        <div class="sidebar col-md-3 p-3">
+            <h1>Account Info</h1>
+            <a href="#" class="active"><i class="fas fa-user"></i> Akun MT5</a>
+            <a href="#"><i class="fas fa-money-check-alt"></i> Deposit</a>
+            <a href="#"><i class="fas fa-hand-holding-usd"></i> Withdrawal</a>
+            <a asp-action="UserDetails"><i class="fas fa-user-cog"></i> Profile</a>
+        </div>
+
+        <div class="col-md-9 p-5 col2">
+            <div class="container-fluid p-5 bg-white rounded-3 shadow">
+                <div class="row-title-btn">
+                    <h1>Live Accounts</h1>
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#confirmLiveModal">
+                        <i class="fa fa-plus"></i> ADD
+                    </button>
+                </div>
+                <div class="modal fade" id="confirmLiveModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" style="text-align: justify;">
+                                Confirm to create new live account? Documents will need to be submitted and verified before account can be activated!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("CreateNewAccount", "Account")?type=live'">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (Model.LiveAccountList == null || !Model.LiveAccountList.Any())
+                {
+                    <div class="text-center my-3">
+                        <h2 class="fw-light">No live accounts available...</h2>
+                    </div>
+                }
+                else
+                {
+                    foreach (var account in Model.LiveAccountList)
+                    {
+                        <div class="account my-3 bg-gradient align-items-center" style="background-color: @($"#{Guid.NewGuid().ToString().Substring(0, 6)}");">
+                            <div class="account-item fw-bold">@account.AccountNumber</div>
+                            <div class="account-item">Platform:<br /><span class="fw-bold">@account.Platform</span></div>
+                            <div class="account-item">Leverage:<br /><span class="fw-bold">@(!string.IsNullOrWhiteSpace(account.Leverage) ? account.Leverage : "-")</span></div>
+                            <div class="account-item">Balance:<br /><span class="fw-bold">IDR @(account.Balance.ToString("#,##0.00") ?? "-")</span></div>
+                            <div class="account-item">Equity:<br /><span class="fw-bold">IDR @(account.Equity.ToString("#,##0.00") ?? "-")</span></div>
+                            <div class="account-item">
+                                Status:<br />@account.Status
+                            </div>
+                            <div class="account-item btn-more text-end">
+                                <div class="dropdown custom-dropdown">
+                                    <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")"
+                                            @(status.ToUpper() == "RESTRICTED" ? "" : "data-bs-toggle=modal data-bs-target=#depositModal_" + account.AccountNumber)>
+                                                <i class="fa-solid fa-credit-card icon"></i>
+                                                <span class="text">Deposit</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")"
+                                            @(status.ToUpper() == "RESTRICTED" ? "" : "data-bs-toggle=modal data-bs-target=#withdrawModal_" + account.AccountNumber)>
+                                                <i class="fa-solid fa-money-bill icon"></i>
+                                                <span class="text">Withdrawal</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex">
+                                                <i class="fa-solid fa-file icon"></i>
+                                                <span class="text">Documents</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#historyModal_@account.AccountNumber">
+                                                <i class="fa-solid fa-house-chimney icon"></i>
+                                                <span class="text">Transaction History</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")" @(status == "RESTRICTED" ? "" : "data-bs-toggle=modal data-bs-target=#confirmSwitchModal_" + account.AccountNumber)>
+                                                <i class="fas fa-sync-alt"></i>
+                                                <span class="text">Switch Account Type</span>
+                                            </a>
+                                        </li>
+                                        @if (account.Status.ToUpper().Contains("INACTIVE", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" asp-controller="Account" asp-action="UpdateAccountStatus" asp-route-id="@account.AccountNumber" asp-route-status="@account.Status">
+                                                    <i class="fas fa-power-off"></i>
+                                                    <span class="text">Activate</span>
+                                                </a>
+                                            </li>
+                                        }
+                                        else if (account.Status.ToUpper().Contains("ACTIVE", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" asp-controller="Account" asp-action="UpdateAccountStatus" asp-route-id="@account.AccountNumber" asp-route-status="@account.Status">
+                                                    <i class="fas fa-power-off"></i>
+                                                    <span class="text">Deactivate</span>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="depositModal_@account.AccountNumber" tabindex="-1">
+                            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                                <div class="modal-content w-75">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Deposit</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" asp-action="DepositAccount" asp-controller="Account">
+                                            <label for="balance" class="form-label required">Main account balance:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>
+                                                <input type="number" class="form-control" id="balance" placeholder="@((TempData["balance"] != null && decimal.TryParse(TempData["balance"].ToString(), out var parsedBalance)) ? parsedBalance.ToString("#,##0.00") : "Error")" disabled>
+                                            </div>
+                                            <label for="depositAmount" class="form-label required">Enter the amount to deposit:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>                                               
+                                                <input type="number" class="form-control" id="depositAmount" name="depositAmount" step="0.01" min="1" oninput="validity.valid||(value='');" required>                                              
+                                            </div>
+                                            <input type="hidden" value="@account.AccountNumber" name="accountNumber" />
+                                            <input type="hidden" value="@account.Type" name="type" />
+                                            <br />
+                                            <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="withdrawModal_@account.AccountNumber" tabindex="-1">
+                            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                                <div class="modal-content w-75">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Withdraw</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" asp-action="WithdrawAccount" asp-controller="Account">
+                                            <label for="balance" class="form-label required">Account balance:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>
+                                                <input type="number" class="form-control" id="balance" placeholder="@(account.Balance.ToString("#,##0.00"))" disabled>
+                                            </div>
+                                            <label for="withdrawAmount" class="form-label required">Enter the amount to withdraw:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>                               
+                                                <input type="number" class="form-control" id="withdrawAmount" name="withdrawAmount" step="0.01" min="1" oninput="validity.valid||(value='');" required>
+                                            </div>
+                                            <input type="hidden" value="@account.AccountNumber" name="accountNumber" />
+                                            <input type="hidden" value="@account.Balance" name="Balance" />
+                                            <input type="hidden" value="@account.Type" name="type" />
+                                            <br />
+                                            <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="confirmSwitchModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Confirm switching @(account.Type == "demo" ? "Demo" : "Live") Account (ID: @account.AccountNumber) to @(account.Type == "demo" ? "Live" : "Demo") Account ?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("SwitchAccountType", "Account")?accountNumber=' + @account.AccountNumber + '&type=' + '@account.Type'">Yes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="historyModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        @if (Model.TransactionsByAccount[account.AccountNumber] == null || !Model.TransactionsByAccount[account.AccountNumber].Any())
+                                        {
+                                            <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300"/>
+                                            <p class="text-center">No data found...</p>
+                                        }
+                                        else
+                                        {
+                                            <table class="table table-striped table-hover table-bordered table-custom">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">ID</th>
+                                                        <th scope="col">Transaction Time</th>
+                                                        <th scope="col">Type</th>
+                                                        <th scope="col">Amount (IDR)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var transaction in Model.TransactionsByAccount[account.AccountNumber])
+                                                    {
+                                                        <tr>
+                                                            <td>@transaction.TransactionId</td>
+                                                            <td style="font-family: Courier New, Courier, monospace">@transaction.TransactionTime</td>
+                                                            <td class="@(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">@transaction.TransactionType.ToUpper()</td>
+                                                            <td class="text-end @(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">
+                                                                @(transaction.TransactionType == "withdraw" ? "-" : "+")@transaction.Amount.ToString("#,0.00")
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="container-fluid mt-5 p-5 bg-white rounded shadow">
+                <div class="row-title-btn">
+                    <h1>Demo Accounts</h1>
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#confirmDemoModal">
+                        <i class="fa fa-plus"></i> ADD
+                    </button>
+                </div>
+                <div class="modal fade" id="confirmDemoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" style="text-align: justify;">
+                                Confirm to create new demo account? Documents will need to be submitted and verified before account can be activated!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary"
+                                        onclick="location.href='@Url.Action("CreateNewAccount", "Account")?type=demo'">
+                                    Yes
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (Model.DemoAccountList == null || !Model.DemoAccountList.Any())
+                {
+                    <div class="text-center my-3">
+                        <h2 class="fw-light">No demo accounts available...</h2>
+                    </div>
+                }
+                else
+                {
+                    foreach (var account in Model.DemoAccountList)
+                    {
+                        <div class="account my-3 bg-gradient align-items-center" style="background-color: @($"#{Guid.NewGuid().ToString().Substring(0, 6)}");">
+                            <div class="account-item fw-bold">@account.AccountNumber</div>
+                            <div class="account-item">Platform:<br /><span class="fw-bold">@account.Platform</span></div>
+                            <div class="account-item">Leverage:<br /><span class="fw-bold">@(!string.IsNullOrWhiteSpace(account.Leverage) ? account.Leverage : "-")</span></div>
+                            <div class="account-item">Balance:<br /><span class="fw-bold">IDR @(account.Balance.ToString("#,##0.00") ?? "-")</span></div>
+                            <div class="account-item">Equity:<br /><span class="fw-bold">IDR @(account.Equity.ToString("#,##0.00") ?? "-")</span></div>
+                            <div class="account-item">
+                                Status:<br />@account.Status
+                            </div>
+                            <div class="account-item btn-more text-end">
+                                <div class="dropdown custom-dropdown">
+                                    <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")"
+                                            @(status == "RESTRICTED" ? "" : "data-bs-toggle=modal data-bs-target=#depositModal_" + account.AccountNumber)>
+                                                <i class="fa-solid fa-credit-card icon"></i>
+                                                <span class="text">Deposit</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")"
+                                            @(status == "RESTRICTED" ? "" : "data-bs-toggle=modal data-bs-target=#withdrawModal_" + account.AccountNumber)>
+                                                <i class="fa-solid fa-money-bill icon"></i>
+                                                <span class="text">Withdrawal</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex">
+                                                <i class="fa-solid fa-file icon"></i>
+                                                <span class="text">Documents</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#historyModal_@account.AccountNumber">
+                                                <i class="fa-solid fa-house-chimney icon"></i>
+                                                <span class="text">Account History</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-more d-flex @(status.ToUpper() == "RESTRICTED" ? "disabled restricted" : "")" @(status == "RESTRICTED" ? "" : "data-bs-toggle='modal' data-bs-target='#confirmSwitchModal_" + account.AccountNumber + "'")>
+                                                <i class="fas fa-sync-alt"></i>
+                                                <span class="text">Switch Account Type</span>
+                                            </a>
+                                        </li>
+                                        @if (account.Status.ToUpper().Contains("INACTIVE", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" asp-controller="Account" asp-action="UpdateAccountStatus" asp-route-id="@account.AccountNumber" asp-route-status="@account.Status">
+                                                    <i class="fas fa-power-off"></i>
+                                                    <span class="text">Activate</span>
+                                                </a>
+                                            </li>
+                                        }
+                                        else if (account.Status.ToUpper().Contains("ACTIVE", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" asp-controller="Account" asp-action="UpdateAccountStatus" asp-route-id="@account.AccountNumber" asp-route-status="@account.Status">
+                                                    <i class="fas fa-power-off"></i>
+                                                    <span class="text">Deactivate</span>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="depositModal_@account.AccountNumber" tabindex="-1">
+                            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                                <div class="modal-content w-75">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Deposit</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" asp-action="DepositAccount" asp-controller="Account">
+                                            <label for="balance" class="form-label required">Main account balance:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>
+                                                <input type="number" class="form-control" id="balance" placeholder="@((TempData["balance"] != null && decimal.TryParse(TempData["balance"].ToString(), out var parsedBalance)) ? parsedBalance.ToString("#,##0.00") : "Error")" disabled>
+                                            </div>
+                                            <label for="depositAmount" class="form-label required">Enter the amount to deposit:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>                                          
+                                                <input type="number" class="form-control" id="depositAmount" name="depositAmount" step="0.01" min="1" oninput="validity.valid||(value='');" required>
+                                                <div class="valid-feedback">Valid.</div>
+                                                <div class="invalid-feedback">Balance in main account is not enough to perform the transaction!</div>
+                                            </div>
+                                            <input type="hidden" value="@account.AccountNumber" name="accountNumber" />
+                                            <input type="hidden" value="@account.Type" name="type" />
+                                            <br />
+                                            <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="withdrawModal_@account.AccountNumber" tabindex="-1">
+                            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                                <div class="modal-content w-75">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Withdraw</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" asp-action="WithdrawAccount" asp-controller="Account">
+                                            <label for="balance" class="form-label required">Account balance:</label>
+                                            <div class="mb-3 input-group">
+                                                <span class="input-group-text">IDR</span>
+                                                <input type="number" class="form-control" id="balance" placeholder="@(account.Balance.ToString("#,##0.00"))" disabled>
+                                            </div>
+                                            <label for="withdrawAmount" class="form-label required">Enter the amount to withdraw:</label>
+                                            <div class="mb-3 input-group">                                              
+                                                <span class="input-group-text">IDR</span>
+                                                <input type="number" class="form-control" id="withdrawAmount" name="withdrawAmount" step="0.01" min="1" oninput="validity.valid||(value='');" required>
+                                            </div>
+                                            <input type="hidden" value="@account.AccountNumber" name="accountNumber" />
+                                            <input type="hidden" value="@account.Balance" name="Balance" />
+                                            <input type="hidden" value="@account.Type" name="type" />
+                                            <br />
+                                            <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block form-control">Confirm</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="confirmSwitchModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Confirm switching @(account.Type == "demo" ? "Demo" : "Live") Account (ID: @account.AccountNumber) to @(account.Type == "demo" ? "Live" : "Demo") Account ?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("SwitchAccountType", "Account")?accountNumber=' + @account.AccountNumber + '&type=' + '@account.Type'">Yes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="historyModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        @if (Model.TransactionsByAccount[account.AccountNumber] == null || !Model.TransactionsByAccount[account.AccountNumber].Any())
+                                        {
+                                            <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300" />
+                                            <p class="text-center">No data found...</p>
+                                        }
+                                        else
+                                        {
+                                            <table class="table table-striped table-hover table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">ID</th>
+                                                        <th scope="col">Transaction Time</th>
+                                                        <th scope="col">Type</th>
+                                                        <th scope="col">Amount (IDR)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var transaction in Model.TransactionsByAccount[account.AccountNumber])
+                                                    {
+                                                        <tr>
+                                                            <td>@transaction.TransactionId</td>
+                                                            <td>@transaction.TransactionTime</td>
+                                                            <td>@transaction.TransactionType.ToUpper()</td>
+                                                            <td class="text-end @(transaction.Amount > 1000 ? "text-danger" : "text-success")">
+                                                                @(transaction.TransactionType == "withdraw" ? "-" : "+")@transaction.Amount.ToString("#,0.00")
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show floating-alert" role="alert" id="successAlert">
+            @successMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show floating-alert" role="alert" id="errorAlert">
+            @errorMessage
+            <button type="button" class="btn-close rounded shadow" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+</div>

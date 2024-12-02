@@ -1,0 +1,1127 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home Page - Users";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+@model DataResponse
+
+<style>
+    .header {
+        flex-wrap: wrap;
+        background: linear-gradient(to right, #FF512F, #F09819);
+        color: white;
+        padding: 20px;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .header h2, .header h5 {
+        margin: 0;
+    }
+
+    .account-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .account-info span {
+        font-weight: bold;
+    }
+
+    .account-info div {
+        flex: 1 1 20%;
+        font-size: 1.1rem;
+    }
+
+    .section-header {
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        color: #666;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+
+    .section-header:nth-of-type(2) {
+        margin-top: 30px;
+    }
+
+    .main-content {
+        padding: 20px;
+        background-color: #fff;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: .9rem;
+    }
+
+    .detail-item span {
+        font-weight: bold;
+    }
+
+    .details-col {
+        padding: 20px;
+    }
+
+    .row-title-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-add {
+        background-color: #002d63;
+        color: white;
+        border-radius: 50px;
+        padding: 5px 10px;
+        font-weight: bold;
+        white-space: nowrap;
+        margin-left: auto;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .btn-add i {
+        margin-right: 8px;
+    }
+
+    .btn-add:hover {
+        color: orange;
+    }
+
+    .account {
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 1rem;
+        color: white;
+        background-color: #ffc107;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .account-item {
+        flex: 1 1 calc(14.2857142857% - 15px);
+        min-width: 150px;
+        padding: 10px;
+        color: white;
+        border-radius: 5px;
+    }
+
+    .account-status {
+        flex: 1 1 100%;
+        text-align: right;
+        background-color: transparent;
+    }
+
+
+    .no-arrow::after {
+        border: none !important;
+        font: normal normal normal 25px/1 FontAwesome;
+        content: "\f013" !important;
+        vertical-align: middle;
+        color: white;
+    }
+
+    .dropdown-item-more {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+
+    .dropdown-item-more i {
+        margin-right: 12px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dropdown-item-more span {
+        flex-grow: 1;
+    }
+
+    .custom-dropdown {
+        margin-left: auto;
+    }
+
+    #password-requirements {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #password-requirements li {
+        color: red;
+    }
+
+    #password-requirements li.valid {
+        color: green;
+    }
+    
+    .custom-nav {
+        all: unset; /* Resets all inherited and applied styles */
+        display: block; /* Restore block-level display if needed */
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px; 
+        height: 20px; 
+        border-radius: 10px; 
+        margin-left: 10px;
+        font-size: 0.8rem; 
+        font-weight: bold;
+        color: white;
+        text-transform: capitalize; 
+    }
+
+    .col2 {
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .status-indicator.active {
+        background-color: green;
+    }
+
+    .status-indicator.restricted {
+        background-color: orange;
+    }
+
+    .status-indicator.banned {
+        background-color: red;
+    }
+
+    .account-number-column {
+        width: 7vw; 
+        text-align: center; 
+    }
+
+    /* Media Queries */
+    @@media (max-width: 992px) {
+        .account-info div {
+            flex: 1 1 45%;
+            font-size: 1rem;
+        }
+
+        .section-header {
+            margin-top: 0;
+        }
+
+        .col2 {
+            width: 100%;
+            margin-top: 30px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .account-item {
+            flex: 1 1 33.333333%;
+        }
+
+        .account-status {
+            text-align: left;
+        }
+    }
+
+    /* Dark Mode Styles */
+    body.dark .activity {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .header {
+        background: var(--box1-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .account-info div {
+        background-color: var(--box2-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .section-header {
+        color: var(--title-icon-color);
+        border-bottom-color: var(--border-color);
+    }
+
+    body.dark .activity .main-content {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+        box-shadow: none;
+    }
+
+    body.dark .activity .detail-item {
+        color: var(--text-color);
+    }
+
+    body.dark .activity .detail-item span {
+        color: var(--toggle-color);
+    }
+
+    body.dark .activity .dropdown-menu {
+        background-color: var(--panel-color);
+        color: var(--text-color);
+    }
+
+    body.dark .activity .dropdown-menu .dropdown-item {
+        color: var(--text-color);
+    }
+
+    body.dark .activity .dropdown-menu .dropdown-item:hover {
+        background-color: var(--border-color);
+    }
+
+    /* Live Account Section */
+    body.dark .activity .live-accounts .account {
+        background-color: var(--box2-color); /* Background for each live account card */
+        color: var(--text-color); /* Text color for live account details */
+        border-radius: 8px; /* Optional: Rounded corners for each account card */
+        padding: 10px; /* Padding to give space inside the account card */
+    }
+
+    /* Demo Account Section */
+    body.dark .activity .demo-accounts .account {
+        background-color: var(--box2-color); /* Background for each demo account card */
+        color: var(--text-color); /* Text color for demo account details */
+        border-radius: 8px; /* Optional: Rounded corners for each account card */
+        padding: 10px; /* Padding to give space inside the account card */
+    }
+
+    /* Modal Background */
+    body.dark .modal-content {
+        background-color: var(--panel-color); /* Modal background */
+        color: var(--text-color); /* Modal text color */
+    }
+
+    /* Modal Header */
+    body.dark .modal-header {
+        background-color: var(--box1-color); /* Modal header background */
+        color: var(--text-color); /* Modal header text color */
+    }
+
+    /* Modal Footer */
+    body.dark .modal-footer {
+        background-color: var(--box1-color); /* Modal footer background */
+        color: var(--text-color); /* Modal footer text color */
+    }
+
+    /* Buttons */
+    body.dark .btn .btn-add {
+        background-color: var(--button-color); /* Button background */
+        color: var(--button-text-color); /* Button text color */
+    }
+
+    body.dark .btn:hover .btn-add:hover {
+        background-color: var(--button-hover-color); /* Button hover background */
+    }
+
+    /* Dropdown Menu Item Styling */
+    body.dark .dropdown-menu .dropdown-item {
+        background-color: var(--panel-color); /* Background for dropdown items */
+        color: var(--text-color); /* Text color for dropdown items */
+    }
+
+    body.dark .dropdown-menu .dropdown-item:hover {
+        background-color: var(--border-color); /* Background for hovered dropdown items */
+    }
+
+    /* Table */
+    body.dark .table-custom {
+        background-color: var(--panel-color); /* Table background color */
+        color: var(--text-color); /* Table text color */
+    }
+
+    body.dark .table-custom th,
+    body.dark .table-custom td {
+        border-color: var(--border-color); /* Table border color */
+    }
+
+    body.dark .table-custom th {
+        background-color: var(--box1-color); /* Header row background color */
+        color: var(--text-color); /* Header text color */
+    }
+
+    body.dark .table-custom tr:hover {
+        background-color: var(--box2-color); /* Row hover background */
+    }
+
+    /* Text and Links */
+    body.dark .text {
+        color: var(--text-color); /* General text color */
+    }
+
+    body.dark .text a {
+        color: var(--link-color); /* Link color */
+    }
+
+    body.dark .text a:hover {
+        color: var(--link-hover-color); /* Link hover color */
+    }
+
+    body.dark .col2 {
+        background-color: var(--panel-color) !important;
+    }
+</style>
+
+
+<section class="dashboard">
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+    </div>
+
+    <div class="dash-content">
+        <div class="activity">
+            <div class="col2 px-5 py-2">
+                <div class="header p-5">
+                    <div class="row-title-btn">
+                        <h2>@Model.User.Username</h2>
+                        <div class="dropdown custom-dropdown">
+                            <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                                        <i class="fas fa-list"></i>
+                                        <span class="text">Transaction History</span>
+                                    </a>
+                                </li>
+                                <li>
+                                        <a asp-controller="Admin" asp-action="ManageActivity" asp-route-email="@Model.User.Email" class="dropdown-item dropdown-item-more d-flex">
+                                            <i class="fa-solid fa-eye icon"></i>
+                                            <span class="text">View Activity</span>
+                                        </a>
+                                    </li>
+                                @if (role == "Admin" || role == "Supervisor")
+                                {
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-more d-flex">
+                                            <i class="fas fa-edit white icon"></i>
+                                            <span class="text">Edit Details</span>
+                                        </a>
+                                    </li>          
+                                    <li>
+                                        <!-- cannot withdraw/transfer -->
+                                        <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#restrictModal">
+                                            <i class="fa-solid @((Model.User.Status.ToUpper() == "RESTRICTED") ? "fa-circle-check" : "fa-ban") icon"></i>
+                                            <span class="text">@((Model.User.Status.ToUpper() == "RESTRICTED") ? "Allow Access" : "Restrict Access")</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <!-- cannot log in -->
+                                        <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#banModal">
+                                            <i class="fa-solid @((Model.User.Status.ToUpper() == "BANNED") ? "fa-circle-check" : "fa-lock") icon"></i>
+                                            <span class="text">@((Model.User.Status.ToUpper() == "BANNED") ? "Unban User" : "Ban User")</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                    <h5>@Model.User.Fullname</h5>
+                    <div class="account-info mt-5">
+                        <div>Balance<br><span>IDR @Model.User.Balance.ToString("#,##0.00")</span></div>
+                        <div>Equity<br><span>IDR @Model.User.Equity.ToString("#,##0.00")</span></div>
+                        <div>Free Margin<br><span>IDR @Model.User.FreeMargin.ToString("#,##0.00")</span></div>
+                        <div>Account Type<br><span>@Model.User.AccountType - @Model.User.LiveAccountType</span></div>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <div class="row">
+                        <div class="col-md-6 details-col">
+                            <div class="section-header">Account Details</div>
+                            <div class="detail-item">
+                                Status<span style="color: @(Model.User.Status.ToUpper() == "RESTRICTED" ? "orange" : Model.User.Status.ToUpper() == "BANNED" ? "red" : "green");">
+                                    @Model.User.Status
+                                </span>
+                            </div>
+                            <div class="detail-item">Account Type<span>@Model.User.AccountType</span></div>
+                            <div class="detail-item">Live Account Type<span>@Model.User.LiveAccountType</span></div>
+                            <div class="detail-item mb-5">Platform<span>@Model.User.Platform</span></div>
+
+                            <div class="section-header">Financial Details</div>
+                            <div class="detail-item">Profit<span>IDR @Model.User.Profit.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Storage<span>@Model.User.Storage.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Commission<span>@Model.User.Commission.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Floating<span>IDR @Model.User.Floating.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Margin<span>@Model.User.Margin.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Free Margin<span>IDR @Model.User.FreeMargin.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Margin Level<span>@Model.User.MarginLevel.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Margin Leverage<span>@Model.User.MarginLeverage</span></div>
+                            <div class="detail-item">Margin Initial<span>@Model.User.MarginInitial.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Margin Maintenance<span>@Model.User.MarginMaintenance.ToString("#,##0.00")</span></div>
+                        </div>
+
+                        <div class="col-md-6 details-col">
+                            <div class="section-header">SO</div>
+                            <div class="detail-item">SO Time<span>@Model.User.SoTime.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">SO Level<span>@Model.User.SoLevel.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">SO Equity<span>@Model.User.SoEquity.ToString("#,##0.00")</span></div>
+                            <div class="detail-item mb-5">SO Margin<span>@Model.User.SoMargin.ToString("#,##0.00")</span></div>
+
+                            <div class="section-header">Other Details</div>
+                            <div class="detail-item">Assets<span>@Model.User.Assets.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Liabilities<span>@Model.User.Liabilities.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Blocked Commission<span>@Model.User.BlockedCommission.ToString("#,##0.00")</span></div>
+                            <div class="detail-item">Blocked Profit<span>@Model.User.BlockedProfit.ToString("#,##0.00")</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (Model.UserTransactionList == null || !Model.UserTransactionList.Any())
+                        {
+                            <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300" />
+                            <p class="text-center">No data found...</p>
+                        }
+                        else
+                        {
+                            <table class="table table-hover table-bordered table-custom">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" scope="col">ID</th>
+                                        <th class="text-center" scope="col">Transaction Time</th>
+                                        <th class="text-center" scope="col">Type</th>
+                                        <th class="text-center" scope="col">Amount (IDR)</th>
+                                        <th class="text-center" class="account-number-column" scope="col">Account No.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in Model.UserTransactionList)
+                                    {
+                                        <tr>
+                                            <td class="text-center">@transaction.TransactionId</td>
+                                            <td style="font-family: Courier New, monospace;">@transaction.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                            <td class="@(transaction.TransactionType == "withdraw" ? "text-success" : "text-danger")">@transaction.TransactionType.ToUpper()</td>
+                                            <td class="text-end @(transaction.TransactionType == "withdraw" ? "text-success" : "text-danger")">
+                                                @(transaction.TransactionType == "withdraw" ? "+" : "-")@transaction.Amount.ToString("#,0.00")
+                                            </td>
+                                            <td class="account-number-column">@transaction.AccountNumber</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <nav class="custom-nav" aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    @if (Model.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="?email=@Model.User.Email&page=@(Model.CurrentPage - 1)&reload=true" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                                            <a class="page-link" href="?email=@Model.User.Email&page=@i&reload=true">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (Model.CurrentPage < Model.TotalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="?email=@Model.User.Email&page=@(Model.CurrentPage + 1)&reload=true" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="restrictModal" tabindex="-1">
+            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                <div class="modal-content w-75">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@((Model.User.Status.ToUpper() == "RESTRICTED") ? "Allow Access" : "Restrict User")</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form method="post" asp-action="RestrictUser" asp-controller="Admin">
+                            <label for="balance" class="form-label required" style="text-align: justify;">
+                                @if (Model.User.Status.ToUpper() == "RESTRICTED")
+                                {
+                                    <span>Are you sure you want to allow access for this user? He/She will be granted the access to perform actions like withdrawal and deposit.</span>
+                                }
+                                else if (Model.User.Status.ToUpper() != "BANNED")
+                                {
+                                    <span>Are you sure you want to restrict this user? He/She will be restricted from performing actions like withdrawal and deposit!</span>
+                                }
+                                else
+                                {
+                                    <span>The user is already banned from accessing his/her account.</span>
+                                }
+                            </label>
+                            <input type="hidden" value="@Model.User.Email" name="email" />
+                            <input type="hidden" value="@Model.User.Status" name="status" />
+                            <br />
+                            @if (Model.User.Status.ToUpper() != "BANNED")
+                            {
+                                <div class="d-flex justify-content-end gap-3 mt-4">
+                                    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary">Confirm</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                              
+                                </div>
+                            }
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="banModal" tabindex="-1">
+            <div class="modal-dialog d-flex modal-dialog-centered justify-content-center">
+                <div class="modal-content w-75">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@((Model.User.Status.ToUpper() == "BANNED") ? "Unban" : "Ban") User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form method="post" asp-action="BanUser" asp-controller="Admin">
+                            @if (Model.User.Status.ToUpper() != "BANNED")
+                            {
+                                <label for="balance" class="form-label required" style="text-align: justify;">
+                                    Are you sure you want to ban this user? His/Her account will be blocked from any login attempt(s)!
+                                </label>
+                            } 
+                            else
+                            {
+                                <label for="balance" class="form-label required" style="text-align: justify;">
+                                    Are you sure you want to unban this user? His/Her account will be allowed to login!
+                                </label>
+                            }
+                            <input type="hidden" value="@Model.User.Email" name="email" />
+                            <input type="hidden" value="@Model.User.Status.ToUpper()" name="status" />
+                            <br />
+                            <div class="d-flex justify-content-end gap-3 mt-4">
+                                <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary">Confirm</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="activity">
+            <div class="col2 px-5 py-2">
+                <div class="container-fluid p-5 bg-white col2 shadow">
+                    <div class="row-title-btn">
+                        <h1>Live Accounts</h1>
+                        @if (role == "Admin" || role == "Supervisor")
+                        {
+                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#confirmLiveModal">
+                                <i class="fa fa-plus"></i> ADD
+                            </button>
+                        }
+                    </div>
+                    <div class="modal fade" id="confirmLiveModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="text-align: justify;">
+                                    Confirm to create a new live account for the user(@Model.User.Email)?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("CreateNewAccount", "Admin")?type=live&email=@Model.User.Email'">Yes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.LiveAccountList == null || !Model.LiveAccountList.Any())
+                    {
+                        <div class="text-center my-3">
+                            <h2 class="fw-light">No live accounts available...</h2>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var account in Model.LiveAccountList)
+                        {
+                            <div class="account my-3 bg-gradient align-items-center" style="background-color: @($"#{Guid.NewGuid().ToString().Substring(0, 6)}");">
+                                <div class="account-item fw-bold">@account.AccountNumber</div>
+                                <div class="account-item">Platform:<br /><span class="fw-bold">@account.Platform</span></div>
+                                <div class="account-item">Leverage:<br /><span class="fw-bold">@(!string.IsNullOrWhiteSpace(account.Leverage) ? account.Leverage : "-")</span></div>
+                                <div class="account-item">Balance:<br /><span class="fw-bold">IDR @(account.Balance.ToString("#,##0.00") ?? "-")</span></div>
+                                <div class="account-item">Equity:<br /><span class="fw-bold">IDR @(account.Equity.ToString("#,##0.00") ?? "-")</span></div>
+                                <div class="account-item">
+                                    Status:<br />@account.Status
+                                </div>
+                                <div class="account-item btn-more text-end">
+                                    <div class="dropdown custom-dropdown">
+                                        <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        </a>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex">
+                                                    <i class="fa-solid fa-file icon"></i>
+                                                    <span class="text">Documents</span>
+                                                </a>
+                                            </li>                                       
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#historyModal_@account.AccountNumber">
+                                                    <i class="fa-solid fa-list icon"></i>
+                                                    <span class="text">Transaction History</span>
+                                                </a>
+                                            </li>                          
+                                            @if (role == "Admin" || role == "Supervisor")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#updateModal_@account.AccountNumber">
+                                                        <i class="fa-solid fa-edit icon"></i>
+                                                        <span class="text">Update Account Status</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#confirmSwitchModal_@account.AccountNumber">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                        <span class="text">Switch Account Type</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#deleteModal_@account.AccountNumber">
+                                                        <i class="fas fa-trash"></i>
+                                                        <span class="text">Delete Account</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="historyModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @if (Model.TransactionsByAccount[account.AccountNumber] == null || !Model.TransactionsByAccount[account.AccountNumber].Any())
+                                            {
+                                                <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300" />
+                                                <p class="text-center">No data found...</p>
+                                            }
+                                            else
+                                            {
+                                                <table class="table table-hover table-bordered table-custom">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">ID</th>
+                                                            <th scope="col">Transaction Time</th>
+                                                            <th scope="col">Type</th>
+                                                            <th scope="col">Amount (IDR)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var transaction in Model.TransactionsByAccount[account.AccountNumber])
+                                                        {
+                                                            <tr>
+                                                                <td>@transaction.TransactionId</td>
+                                                                <td style="font-family: Courier New, monospace;">@transaction.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                                <td class="@(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">@transaction.TransactionType.ToUpper()</td>
+                                                                <td class="text-end @(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">
+                                                                    @(transaction.TransactionType == "withdraw" ? "-" : "+")@transaction.Amount.ToString("#,0.00")
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="updateModal_@account.AccountNumber" tabindex="-1" aria-labelledby="updateAccountModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="updateModalLabel">Update Account Status</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form class="update-form" asp-controller="Admin" asp-action="UpdateAccountStatus" method="POST">
+                                            <div class="modal-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="account-type" class="form-label">Account Type</label>
+                                                        <select class="form-select" id="account-type-@account.AccountNumber" name="accountType" required>
+                                                            <!option value="KYC" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "KYC" ? "selected" : "")>KYC</!option>
+                                                            <!option value="STANDARD" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "STANDARD" ? "selected" : "")>STANDARD</!option>
+                                                            <!option value="ULTRA LOW" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "ULTRA LOW" ? "selected" : "")>ULTRA LOW</!option>
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Dropdown for Account Status -->
+                                                    <div class="col-md-6">
+                                                        <label for="account-status" class="form-label">Account Status</label>
+                                                        <select class="form-select" id="account-status-@account.AccountNumber" name="accountStatus" required>
+                                                            <!option value="ACTIVE" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "ACTIVE" ? "selected" : "")>ACTIVE</!option>
+                                                            <!option value="INACTIVE" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "INACTIVE" ? "selected" : "")>INACTIVE</!option>
+                                                            <!option value="PENDING" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "PENDING" ? "selected" : "")>PENDING</!option>
+                                                            <!option value="REJECTED" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "REJECTED" ? "selected" : "")>REJECTED</!option>
+                                                            <!option value="DRAFT" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "DRAFT" ? "selected" : "")>DRAFT</!option>
+                                                        </select>
+                                                    </div>
+                                                   
+                                                    <input type="hidden" name="email" value="@Model.User.Email" />
+                                                    <input type="hidden" name="accountNumber" value="@account.AccountNumber" />
+                                                    <input type="hidden" name="oldStatus" value="@account.Status" />
+                                                </div>
+                                                <div class="row g-3 mt-2">
+                                                    <div class="col-md-12">
+                                                        <div class="alert alert-danger" style="display: none; padding-left: 1.25rem; padding-right: 1.25rem;">
+                                                            No changes detected...
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="confirmSwitchModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Confirm switching @(account.Type == "demo" ? "Demo" : "Live") Account (ID: @account.AccountNumber) to @(account.Type == "demo" ? "Live" : "Demo") Account ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("SwitchAccountType", "Admin")?accountNumber=@account.AccountNumber&type=@account.Type&email=@account.Email'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="deleteModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" style="text-align: justify;">
+                                            Confirm to delete this account? All the related transactions will be removed as well. This is a highly sensitive action that cannot be undone!
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("DeleteAccount", "Admin")?accountNumber=@account.AccountNumber&email=@account.Email'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="container-fluid mt-3 p-5 bg-white col2 shadow">
+                    <div class="row-title-btn">
+                        <h1>Demo Accounts</h1>
+                        @if (role == "Admin" || role == "Supervisor")
+                        {
+                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#confirmDemoModal">
+                                <i class="fa fa-plus"></i> ADD
+                            </button>
+                        }
+                    </div>
+                    <div class="modal fade" id="confirmDemoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="text-align: justify;">
+                                    Confirm to create a new demo account for the user(@Model.User.Email)?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary"
+                                            onclick="location.href='@Url.Action("CreateNewAccount", "Admin")?type=demo&email=@Model.User.Email'">
+                                        Yes
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.DemoAccountList == null || !Model.DemoAccountList.Any())
+                    {
+                        <div class="text-center my-3">
+                            <h2 class="fw-light">No demo accounts available...</h2>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var account in Model.DemoAccountList)
+                        {
+                            <div class="account my-3 bg-gradient align-items-center" style="background-color: @($"#{Guid.NewGuid().ToString().Substring(0, 6)}");">
+                                <div class="account-item fw-bold">@account.AccountNumber</div>
+                                <div class="account-item">Platform:<br /><span class="fw-bold">@account.Platform</span></div>
+                                <div class="account-item">Leverage:<br /><span class="fw-bold">@(!string.IsNullOrWhiteSpace(account.Leverage) ? account.Leverage : "-")</span></div>
+                                <div class="account-item">Balance:<br /><span class="fw-bold">IDR @(account.Balance.ToString("#,##0.00") ?? "-")</span></div>
+                                <div class="account-item">Equity:<br /><span class="fw-bold">IDR @(account.Equity.ToString("#,##0.00") ?? "-")</span></div>
+                                <div class="account-item">
+                                    Status:<br />@account.Status
+                                </div>
+                                <div class="account-item btn-more text-end">
+                                    <div class="dropdown custom-dropdown">
+                                        <a class="dropdown-toggle no-arrow" href="#" id="dropdownMenuLinkUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        </a>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLinkUser">
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex">
+                                                    <i class="fa-solid fa-file icon"></i>
+                                                    <span class="text">Documents</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#historyModal_@account.AccountNumber">
+                                                    <i class="fa-solid fa-list icon"></i>
+                                                    <span class="text">Transaction History</span>
+                                                </a>
+                                            </li>
+                                            @if (role == "Admin" || role == "Supervisor")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#updateModal_@account.AccountNumber">
+                                                        <i class="fa-solid fa-edit icon"></i>
+                                                        <span class="text">Update Account Status</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#confirmSwitchModal_@account.AccountNumber">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                        <span class="text">Switch Account Type</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item dropdown-item-more d-flex" data-bs-toggle="modal" data-bs-target="#deleteModal_@account.AccountNumber">
+                                                        <i class="fas fa-trash"></i>
+                                                        <span class="text">Delete Account</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="historyModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Transaction History</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @if (Model.TransactionsByAccount[account.AccountNumber] == null || !Model.TransactionsByAccount[account.AccountNumber].Any())
+                                            {
+                                                <img src="~/assets/images/no-data.png" class="d-block mx-auto" height="300" width="300" />
+                                                <p class="text-center">No data found...</p>
+                                            }
+                                            else
+                                            {
+                                                <table class="table table-hover table-bordered table-custom">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">ID</th>
+                                                            <th scope="col">Transaction Time</th>
+                                                            <th scope="col">Type</th>
+                                                            <th scope="col">Amount (IDR)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var transaction in Model.TransactionsByAccount[account.AccountNumber])
+                                                        {
+                                                            <tr>
+                                                                <td>@transaction.TransactionId</td>
+                                                                <td style="font-family: Courier New, monospace;">@transaction.TransactionTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                                <td class="@(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">@transaction.TransactionType.ToUpper()</td>
+                                                                <td class="text-end @(transaction.TransactionType == "withdraw" ? "text-danger" : "text-success")">
+                                                                    @(transaction.TransactionType == "withdraw" ? "-" : "+")@transaction.Amount.ToString("#,0.00")
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="updateModal_@account.AccountNumber" tabindex="-1" aria-labelledby="updateAccountModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="updateModalLabel">Update Account Status</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form class="update-form" asp-controller="Admin" asp-action="UpdateAccountStatus" method="POST">
+                                            <div class="modal-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="account-type" class="form-label">Account Type</label>
+                                                        <select class="form-select" id="account-type-@account.AccountNumber" name="accountType" required>
+                                                            <!option value="KYC" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "KYC" ? "selected" : "")>KYC</!option>
+                                                            <!option value="STANDARD" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "STANDARD" ? "selected" : "")>STANDARD</!option>
+                                                            <!option value="ULTRA LOW" @(account.Status.Split(" - ").Length > 0 && account.Status.Split(" - ")[0] == "ULTRA LOW" ? "selected" : "")>ULTRA LOW</!option>
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Dropdown for Account Status -->
+                                                    <div class="col-md-6">
+                                                        <label for="account-status" class="form-label">Account Status</label>
+                                                        <select class="form-select" id="account-status-@account.AccountNumber" name="accountStatus" required>
+                                                            <!option value="ACTIVE" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "ACTIVE" ? "selected" : "")>ACTIVE</!option>
+                                                            <!option value="INACTIVE" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "INACTIVE" ? "selected" : "")>INACTIVE</!option>
+                                                            <!option value="PENDING" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "PENDING" ? "selected" : "")>PENDING</!option>
+                                                            <!option value="REJECTED" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "REJECTED" ? "selected" : "")>REJECTED</!option>
+                                                            <!option value="DRAFT" @(account.Status.Split(" - ").Length > 1 && account.Status.Split(" - ")[1] == "DRAFT" ? "selected" : "")>DRAFT</!option>
+                                                        </select>
+                                                    </div>
+
+                                                    <input type="hidden" name="email" value="@Model.User.Email" />
+                                                    <input type="hidden" name="accountNumber" value="@account.AccountNumber" />
+                                                    <input type="hidden" name="oldStatus" value="@account.Status" />
+                                                </div>
+                                                <div class="row g-3 mt-2">
+                                                    <div class="col-md-12">
+                                                        <div class="alert alert-danger" style="display: none; padding-left: 1.25rem; padding-right: 1.25rem;">
+                                                            No changes detected...
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="confirmSwitchModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Confirm switching @(account.Type == "demo" ? "Demo" : "Live") Account (ID: @account.AccountNumber) to @(account.Type == "demo" ? "Live" : "Demo") Account ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("SwitchAccountType", "Admin")?accountNumber=@account.AccountNumber&type=@account.Type&email=@account.Email'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="deleteModal_@account.AccountNumber" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" style="text-align: justify;">
+                                            Confirm to delete this account? All the related transactions will be removed as well. This is a highly sensitive action that cannot be undone!
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick="location.href='@Url.Action("DeleteAccount", "Admin")?accountNumber=@account.AccountNumber&email=@account.Email'">
+                                                Yes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var showTransactionModal = @Html.Raw(Json.Serialize(TempData["ShowTransactionModal"]));
+
+        if (showTransactionModal) {
+            var myModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+            myModal.show();
+        }
+    });
+
+    document.querySelectorAll('.update-form').forEach(function(form) {
+        const accountNumber = form.querySelector('input[name="accountNumber"]').value;
+        const accountTypeSelect = form.querySelector(`#account-type-${accountNumber}`);
+        const accountStatusSelect = form.querySelector(`#account-status-${accountNumber}`);
+
+        const initialAccountType = accountTypeSelect.value;
+        const initialAccountStatus = accountStatusSelect.value;
+
+        // Add event listener for form submission
+        form.onsubmit = function(event) {
+            if (accountTypeSelect.value === initialAccountType && accountStatusSelect.value === initialAccountStatus) {
+                // If no changes, show the error message in the modal
+                const errorMessage = form.querySelector('.alert');
+                errorMessage.style.display = 'block';  // Show error message
+
+                event.preventDefault();  // Prevent form submission
+            } else {
+                // If there are changes, hide the error message
+                const errorMessage = form.querySelector('.alert');
+                errorMessage.style.display = 'none';  // Hide error message
+            }
+        };
+    });
+</script>

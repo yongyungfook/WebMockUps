@@ -1,0 +1,91 @@
+﻿
+<script>
+    function validatePasswordRequirements() {
+        const password = document.getElementById("regPassword").value;
+
+        // Define regex patterns for each requirement
+        const minChar = /.{8,}/;
+        const uppercase = /[A-Z]/;
+        const lowercase = /[a-z]/;
+        const number = /[0-9]/;
+        const specialChar = /[!@@#$%^&*(),.?":{}|<>]/;
+
+        // Check each requirement and update the UI
+        validateRequirement("min-char", minChar.test(password));
+        validateRequirement("uppercase", uppercase.test(password));
+        validateRequirement("lowercase", lowercase.test(password));
+        validateRequirement("number", number.test(password));
+        validateRequirement("special-char", specialChar.test(password));
+    }
+
+    function validateRequirement(elementId, isValid) {
+        const element = document.getElementById(elementId);
+        if (isValid) {
+            element.classList.add("valid");
+            element.classList.remove("invalid");
+        } else {
+            element.classList.add("invalid");
+            element.classList.remove("valid");
+        }
+    }
+
+    function validatePasswordMatch() {
+        const password = document.getElementById("regPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword");
+
+        if (password !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords do not match");
+        } else {
+            confirmPassword.setCustomValidity("");
+        }
+    }
+
+    // Event listeners for validation
+    window.onload = function () {
+        const password = document.getElementById("regPassword");
+        const confirmPassword = document.getElementById("confirmPassword");
+
+        password.oninput = function () {
+            validatePasswordRequirements();
+            validatePasswordMatch();
+        };
+        confirmPassword.oninput = validatePasswordMatch;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const registerForm = document.getElementById('registerForm');
+        const confirmSubmit = document.getElementById('confirmSubmit');
+        const verificationModal = document.getElementById('verificationModal');
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                if (verificationModal) {
+                    const emailValue = document.getElementById('regEmail').value;
+                    console.log("Captured Email:", emailValue);
+
+                    document.getElementById('modalEmail').textContent = emailValue;
+
+                    var myModal = new bootstrap.Modal(verificationModal);
+                    myModal.show();
+                } else {
+                    console.warn('Verification modal not found, submitting form directly.');
+                    registerForm.submit();
+                }
+            });
+        }
+
+        if (confirmSubmit) {
+            confirmSubmit.addEventListener('click', function () {
+                if (verificationModal) {
+                    var myModal = bootstrap.Modal.getInstance(verificationModal);
+                    myModal.hide();
+                }
+
+                registerForm.submit();
+            });
+        }
+    });
+
+</script>

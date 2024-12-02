@@ -1,0 +1,157 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+@model RegisterUser
+<style>
+    .form-label.required:after {
+        content: "*"; 
+        color: red;
+        margin-left: 4px; 
+    }
+
+    .col2 {
+        margin-top: -32px;
+        margin-right: auto;
+        background-image: url('@Url.Content("~/assets/images/bg-reg.png")');
+        background-color: midnightblue;
+        color: white;
+    }
+    .modal-content-email {
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+    }
+    .modal-icon {
+        font-size: 60px;
+        color: #004085;
+        margin-bottom: 20px;
+    }
+    .modal-email {
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+    .btn-verify {
+        background-color: #004085;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 30px;
+    }
+    .btn-verify:hover {
+        background-color: #002752;
+    }
+
+    #password-requirements {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #password-requirements li {
+        color: red;
+    }
+
+    #password-requirements li.valid {
+        color: green;
+    }
+
+    @@media (max-width: 992px) {
+        .col2 {
+            margin-top: 20px;
+            padding-top: 100px;
+            padding-bottom: 100px;
+        }
+    }
+
+</style>
+
+<div class="container-fluid m-6">
+    <div class="row">
+        <div class="col-md-8 p-5">
+            <h1>Register an Account</h1><br/>
+            <form asp-action="Register" id="registerForm" class="was-validated">
+                <div class="mb-3">
+                    <label for="name" class="form-label required">Nama Penuh</label>
+                    <input type="text" asp-for="Fullname" class="form-control" id="name" required>
+                    <div class="valid-feedback">Valid.</div>
+                    <div class="invalid-feedback">Please fill out this field.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label required">Username</label>
+                    <input type="text" asp-for="Username" class="form-control" id="username" required>
+                    <div class="valid-feedback">Valid.</div>
+                    <div class="invalid-feedback">Please fill out this field.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label required">Email</label>
+                    <input type="email" asp-for="Email" class="form-control" id="regEmail" required>
+                    <div class="valid-feedback">Valid.</div>
+                    <div class="invalid-feedback">Please fill out this field with the correct email.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label required">Password</label>
+                    <input type="password" asp-for="Password" class="form-control" id="regPassword" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[&#64;$!%*?&])[A-Za-z\d&#64;$!%*?&]{8,}$" required>
+                    <ul id="password-requirements">
+                        <li id="min-char" class="invalid">✔️ At least 8 characters</li>
+                        <li id="uppercase" class="invalid">✔️ At least one uppercase letter</li>
+                        <li id="lowercase" class="invalid">✔️ At least one lowercase letter</li>
+                        <li id="number" class="invalid">✔️ At least one number</li>
+                        <li id="special-char" class="invalid">✔️ At least one special character (e.g., !@@#$%)</li>
+                    </ul>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label required">Ketik Ulang Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                    <div class="valid-feedback">Valid.</div>
+                    <div class="invalid-feedback">Password do not match.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="referralCode" class="form-label">Kode Referral</label>
+                    <input type="text" class="form-control" id="referralCode" placeholder="Kode Sales / Referral (jika ada)">
+                </div>
+                <div class="mb-3">
+                    <label for="phoneNumber" class="form-label required">No. Handphone</label>
+                    <input type="tel" asp-for="PhoneNumber" class="form-control" id="phoneNumber" pattern="^(\+?6?01)[02-46-9]-*[0-9]{7}$|^(\+?6?01)[1]-*[0-9]{8}$" onclick="validatePasswordRequirements()" required>
+                    <div class="valid-feedback">Valid.</div>
+                    <div class="invalid-feedback">Please fill out this field.</div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="agreeCheck" required>
+                    <label class="form-check-label" style="color: black !important;" for="agreeCheck">I have read and understood the <a href="#">Terms and Conditions</a></label>
+                    <div class="invalid-feedback">You must agree before submitting.</div>
+                </div>
+                @if (TempData["RegMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @TempData["RegMessage"]
+                    </div>
+                }
+
+                <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content modal-content-email">
+                            <div class="modal-icon">
+                                <i class="fa-solid fa-envelope-open-text"></i> 
+                            </div>
+                            <h5 class="modal-title" id="verificationModalLabel">Verifikasi email anda sekarang</h5>
+                            <p class="mt-3">Kami akan mengirimkan link verifikasi ke email anda yang terdaftar di EsaFX.</p>
+                            <p class="modal-email" id="modalEmail"></p>
+                            <button type="button" id="confirmSubmit" class="btn btn-verify">Kirim Link Verifikasi</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary float-end">Register</button>
+            </form>
+        </div>
+        <div class="col-md-4 p-5 col2 align-content-center">
+            <img src="@Url.Content("~/assets/images/logo-dark.png")" width=250 height=100/>
+            <h1>Get started to enjoy these <span style="color: yellow;">benefits!</span></h1><br/>
+            <h5><i class="fa-solid fa-check"></i>&nbsp;&nbsp;&nbsp;Exclusive trading tools to elevate your analysis</h5>
+            <h5><i class="fa-solid fa-check"></i>&nbsp;&nbsp;&nbsp;Unlimited access to all member-only features!</h5>
+            <h5><i class="fa-solid fa-check"></i>&nbsp;&nbsp;&nbsp;Get started with $10,000 for your demo account</h5>
+        </div>
+    </div>
+</div>
+@await Html.PartialAsync("_ValidationScriptsPartial")

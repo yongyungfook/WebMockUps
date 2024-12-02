@@ -1,0 +1,175 @@
+﻿@using System.Security.Claims
+@{
+    var username = TempData["username"];
+    ViewData["Title"] = $"{username} Activity - Admin";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+@model List<Log>
+
+<section class="dashboard">
+    <div class="top">
+        <i class="uil uil-bars sidebar-toggle"></i>
+        <div class="search-box">
+            <i class="uil uil-search"></i>
+            <input type="text" id="searchBox" placeholder="Search here...">
+        </div>
+    </div>
+
+    <div class="dash-content">
+        <div class="activity">
+            @using (Html.BeginForm("DeleteSelectedLog", "Admin", FormMethod.Post, new { id = "deleteForm" }))
+            {
+                <input type="hidden" name="returnUrl" value="@TempData["returnUrl"]" />
+                <div class="title" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center;">
+                        <i class="uil uil-clock-three"></i>
+                        <span class="text">@(username)'s Activity</span>
+                    </div>
+                    @if (role == "Admin")
+                    {
+                        <div>
+                            <button id="selectButton" class="btn btn-primary">Select</button>
+                            <button id="selectAllButton" class="btn btn-primary" style="display:none;">Select All</button>
+                            <button id="deleteButton" class="btn btn-danger" type="button" style="display:none;" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete Selected</button>
+                        </div>
+                    }
+                </div>
+                <div class="activity-data">
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="data">
+                            <h3 style="color: var(--text-color);"><span>No activity found...</span></h3>
+                        </div>
+                    }
+                    else 
+                    {                     
+                        <div class="data">
+                            <span class="data-title">Activity</span>
+                            @foreach (var log in Model)
+                            {
+                                <div class="data-list" data-message="@log.Message" data-time="@log.LogTime" data-type="@log.EventType" data-email="@log.Email" class="log-message">
+                                    <input type="checkbox" class="log-checkbox" data-id="@log.LogId" name="selectedIds" value="@log.LogId" style="display:none;">
+                                    <span>@log.Message</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="data">
+                            <span class="data-title">Time</span>
+                            @foreach (var log in Model)
+                            {
+                                <div class="data-list" data-message="@log.Message" data-time="@log.LogTime" data-type="@log.EventType" data-email="@log.Email">
+                                    <span style="font-family: monospace;" class="log-time text-end">@log.LogTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+        </div>
+    </div>
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the selected logs? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteButton" class="btn btn-danger">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let isSelectionModeActive = false; // Tracks whether selection mode is active
+    let isAllSelected = false; // Tracks whether all checkboxes are selected
+
+    document.getElementById('selectButton').addEventListener('click', function (event) {
+        const checkboxes = document.querySelectorAll('.log-checkbox');
+        const deleteButton = document.getElementById('deleteButton');
+        const selectAllButton = document.getElementById('selectAllButton');
+
+        isSelectionModeActive = !isSelectionModeActive; // Toggle selection mode
+
+        // Show or hide checkboxes
+        checkboxes.forEach(checkbox => {
+            checkbox.style.display = isSelectionModeActive ? 'inline-block' : 'none';
+            checkbox.checked = false; // Reset all checkboxes when toggling
+        });
+
+        deleteButton.style.display = 'none'; // Hide the delete button initially
+        selectAllButton.style.display = isSelectionModeActive ? 'inline-block' : 'none';
+
+        // Reset "Select All" button text
+        isAllSelected = false;
+        selectAllButton.textContent = 'Select All';
+
+        event.preventDefault();
+    });
+
+    document.getElementById('selectAllButton').addEventListener('click', function (event) {
+        const checkboxes = document.querySelectorAll('.log-checkbox');
+        const deleteButton = document.getElementById('deleteButton');
+
+        // Toggle all checkboxes
+        isAllSelected = !isAllSelected;
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = isAllSelected;
+        });
+
+        deleteButton.style.display = isAllSelected ? 'inline-block' : 'none'; // Show delete button if any are selected
+        this.textContent = isAllSelected ? 'Deselect All' : 'Select All';
+
+        event.preventDefault();
+    });
+
+    // Update delete button visibility when individual checkboxes are manually toggled
+    document.addEventListener('change', function (event) {
+        if (event.target.classList.contains('log-checkbox')) {
+            const checkboxes = document.querySelectorAll('.log-checkbox');
+            const deleteButton = document.getElementById('deleteButton');
+
+            const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            deleteButton.style.display = anyChecked ? 'inline-block' : 'none';
+
+            // Update "Select All" button text based on checkbox states
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            isAllSelected = allChecked;
+            document.getElementById('selectAllButton').textContent = allChecked ? 'Deselect All' : 'Select All';
+        }
+    });
+
+    // Search functionality
+    document.getElementById('searchBox').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const activityItems = document.querySelectorAll('.data-list');
+
+        activityItems.forEach(item => {
+            const email = item.getAttribute('data-email')?.toLowerCase() || '';
+            const message = item.getAttribute('data-message')?.toLowerCase() || '';
+            const time = item.getAttribute('data-time')?.toLowerCase() || '';
+            const type = item.getAttribute('data-type')?.toLowerCase() || '';
+
+            if (type.includes(query) || time.includes(query) || email.includes(query) || message.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Handle confirmation from the modal
+    document.getElementById('confirmDeleteButton').addEventListener('click', function () {
+        // Submit the form after confirmation
+        document.getElementById('deleteForm').submit();
+    });
+</script>
+
